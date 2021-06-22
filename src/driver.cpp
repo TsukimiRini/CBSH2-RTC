@@ -26,6 +26,7 @@ int main(int argc, char** argv)
 		("agents,a", po::value<string>()->required(), "input file for agents")
 		("output,o", po::value<string>(), "output file for schedule")
 		("outputPaths", po::value<string>(), "output file for paths")
+		("outputSteps", po::value<string>(), "output file for each step")
 		("agentNum,k", po::value<int>()->default_value(0), "number of agents")
 		("cutoffTime,t", po::value<double>()->default_value(60), "cutoff time (seconds)")
 		("nodeLimit", po::value<int>()->default_value(MAX_NODES), "node limit")
@@ -175,6 +176,8 @@ int main(int argc, char** argv)
 	}
     if (cbs.solution_found && vm.count("outputPaths"))
         cbs.savePaths(vm["outputPaths"].as<string>());
+	if (vm.count("outputSteps"))
+		cbs.saveSteps(vm["outputSteps"].as<string>(),vm["agents"].as<string>()+":"+ vm["agentIdx"].as<string>());
 	cbs.clearSearchEngines();
 	return 0;
 

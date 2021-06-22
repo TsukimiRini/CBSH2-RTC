@@ -606,6 +606,7 @@ void CBS::saveResults(const string& fileName, const string& instanceName) const
 
 	// path stats
 	int max_len = 0, max_idx = -1, success_a_cnt = 0;
+	vector<int> goals = search_engines[0]->instance.getGoals();
 	for (int i =0; i< num_of_agents;i++){
 		int len = 0, last = -1;
 		for (const auto & t : *paths[i]){
@@ -614,7 +615,6 @@ void CBS::saveResults(const string& fileName, const string& instanceName) const
 			}
 			last = t.location;
 		}
-		vector<int> goals = search_engines[0]->instance.getGoals();
 		if((*paths[i])[(*paths[i]).size() - 1].location==goals[i])
 			success_a_cnt++;
 		len-=1;
@@ -648,6 +648,48 @@ void CBS::saveResults(const string& fileName, const string& instanceName) const
 
 	// 	  runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
 	stats.close();
+}
+
+void CBS::saveSteps(const string &fileName, const string& instanceName) const{
+	std::ifstream infile(fileName);
+	bool exist = infile.good();
+	infile.close();
+	if (!exist)
+	{
+		ofstream addHeads(fileName);
+		addHeads <<"instance name,step,makespan,num of agents,success agent cnt,sum of costs"<<endl;
+		addHeads.close();
+	}
+
+	ofstream stats(fileName, std::ios::app);
+
+	vector<int> goals = search_engines[0]->instance.getGoals();
+	int steps = 0;
+	for(int i=0;i<num_of_agents;i++){
+		steps = max(steps, int((*paths[i]).size()));
+	}
+	int makespan=-1,success_a=0,sum_of_costs=0;
+	cout<<steps<<endl;
+	for(int i=0;i<steps;i++){
+		for(int j=0;j<num_of_agents;j++){
+			if((*paths[j]).size()>i && i!=0 && (*paths[j])[i].location!= (*paths[j])[i-1].location){
+				sum_of_costs++;
+			}
+			if((*paths[j]).size()==i+1){
+				success_a++;
+				int len = 0, last = -1;
+				for (const auto & t : *paths[j]){
+					if(t.location!=last){
+						len+=1;
+					}
+					last = t.location;
+				}
+				len--;
+				makespan = max(len, makespan);
+			}
+		}
+		stats<<instanceName<<","<<i<<","<<makespan<<","<<num_of_agents<<","<<success_a<<","<<sum_of_costs<<endl;
+	}
 }
 
 void CBS::saveStats(const string &fileName, const string &instanceName) const
