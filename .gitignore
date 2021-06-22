@@ -1,3 +1,12 @@
 .idea
 cmake-*
 bin
+cbs
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles
+Makefile
+init_envs
+outputs
+.DS_Store
+.vscode

@@ -589,43 +589,64 @@ void CBS::saveResults(const string& fileName, const string& instanceName) const
 	if (!exist)
 	{
 		ofstream addHeads(fileName);
-		addHeads << "runtime,#high-level expanded,#high-level generated,#low-level expanded,#low-level generated," <<
-				 "solution cost,min f value,root g value,root f value," <<
-				 "#adopt bypasses," <<
-				 "standard conflicts,rectangle conflicts,corridor conflicts,target conflicts,mutex conflicts," <<
-				 "#merge MDDs,#solve 2 agents,#memoization," <<
-				 "runtime of building heuristic graph,runtime of solving MVC," <<
-				 "runtime of detecting conflicts," <<
-				 "runtime of rectangle conflicts,runtime of corridor conflicts,runtime of mutex conflicts," <<
-				 "runtime of building MDDs,runtime of building constraint tables,runtime of building CATs," <<
-				 "runtime of path finding,runtime of generating child nodes," <<
-				 "preprocessing runtime,solver name,instance name" << endl;
+		// addHeads << "runtime,#high-level expanded,#high-level generated,#low-level expanded,#low-level generated," <<
+		// 		 "solution cost,min f value,root g value,root f value," <<
+		// 		 "#adopt bypasses," <<
+		// 		 "standard conflicts,rectangle conflicts,corridor conflicts,target conflicts,mutex conflicts," <<
+		// 		 "#merge MDDs,#solve 2 agents,#memoization," <<
+		// 		 "runtime of building heuristic graph,runtime of solving MVC," <<
+		// 		 "runtime of detecting conflicts," <<
+		// 		 "runtime of rectangle conflicts,runtime of corridor conflicts,runtime of mutex conflicts," <<
+		// 		 "runtime of building MDDs,runtime of building constraint tables,runtime of building CATs," <<
+		// 		 "runtime of path finding,runtime of generating child nodes," <<
+		// 		 "preprocessing runtime,solver name,instance name" << endl;
+		addHeads <<"instance name,solver name,success,agent_num,success agent cnt,sum of costs,makespan,runtime"<<endl;
 		addHeads.close();
 	}
+
+	// path stats
+	int max_len = 0, max_idx = -1, success_a_cnt = 0;
+	for (int i =0; i< num_of_agents;i++){
+		int len = 0, last = -1;
+		for (const auto & t : *paths[i]){
+			if(t.location!=last){
+				len+=1;
+			}
+			last = t.location;
+		}
+		vector<int> goals = search_engines[0]->instance.getGoals();
+		if((*paths[i])[(*paths[i]).size() - 1].location==goals[i])
+			success_a_cnt++;
+		len-=1;
+		max_len = max(len, max_len);
+	}
+
 	ofstream stats(fileName, std::ios::app);
-	stats << runtime << "," <<
-		  num_HL_expanded << "," << num_HL_generated << "," <<
-		  num_LL_expanded << "," << num_LL_generated << "," <<
+	stats <<instanceName<<","<<getSolverName()<<","<<(solution_cost>=0?"yes":"no")<<","<<
+		num_of_agents<<","<<success_a_cnt<<","<<solution_cost<<","<<max_len<<","<<runtime<<endl;
+	// stats << runtime << "," <<
+	// 	  num_HL_expanded << "," << num_HL_generated << "," <<
+	// 	  num_LL_expanded << "," << num_LL_generated << "," <<
 
-		  solution_cost << "," << min_f_val << "," << dummy_start->g_val << "," << dummy_start->g_val + dummy_start->h_val << "," <<
+	// 	  solution_cost << "," << min_f_val << "," << dummy_start->g_val << "," << dummy_start->g_val + dummy_start->h_val << "," <<
 
-		  num_adopt_bypass << "," <<
+	// 	  num_adopt_bypass << "," <<
 
-		  num_standard_conflicts << "," << num_rectangle_conflicts << "," << num_corridor_conflicts << "," <<
-		  num_target_conflicts << "," << num_mutex_conflicts << "," <<
+	// 	  num_standard_conflicts << "," << num_rectangle_conflicts << "," << num_corridor_conflicts << "," <<
+	// 	  num_target_conflicts << "," << num_mutex_conflicts << "," <<
 
-		  heuristic_helper.num_merge_MDDs << "," <<
-		  heuristic_helper.num_solve_2agent_problems << "," <<
-		  heuristic_helper.num_memoization << "," <<
-		  heuristic_helper.runtime_build_dependency_graph << "," <<
-		  heuristic_helper.runtime_solve_MVC << "," <<
+	// 	  heuristic_helper.num_merge_MDDs << "," <<
+	// 	  heuristic_helper.num_solve_2agent_problems << "," <<
+	// 	  heuristic_helper.num_memoization << "," <<
+	// 	  heuristic_helper.runtime_build_dependency_graph << "," <<
+	// 	  heuristic_helper.runtime_solve_MVC << "," <<
 
-		  runtime_detect_conflicts << "," <<
-		  rectangle_helper.accumulated_runtime << "," << corridor_helper.accumulated_runtime << "," << mutex_helper.accumulated_runtime << "," <<
-		  mdd_helper.accumulated_runtime << "," << runtime_build_CT << "," << runtime_build_CAT << "," <<
-		  runtime_path_finding << "," << runtime_generate_child << "," <<
+	// 	  runtime_detect_conflicts << "," <<
+	// 	  rectangle_helper.accumulated_runtime << "," << corridor_helper.accumulated_runtime << "," << mutex_helper.accumulated_runtime << "," <<
+	// 	  mdd_helper.accumulated_runtime << "," << runtime_build_CT << "," << runtime_build_CAT << "," <<
+	// 	  runtime_path_finding << "," << runtime_generate_child << "," <<
 
-		  runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
+	// 	  runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
 	stats.close();
 }
 

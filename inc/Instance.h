@@ -101,6 +101,8 @@ public:
 
 	int getDefaultNumberOfAgents() const { return num_of_agents; }
 
+	vector<int> getGoals()const { return goal_locations; }
+
 private:
 	  // int moves_offset[MOVE_COUNT];
 	  vector<bool> my_map;

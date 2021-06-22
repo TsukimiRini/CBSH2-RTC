@@ -276,10 +276,11 @@ bool Instance::loadMap()
 	// read map (and start/goal locations)
 	for (int i = 0; i < num_of_rows; i++)
 	{
-		getline(myfile, line);
+		// getline(myfile, line);
 		for (int j = 0; j < num_of_cols; j++)
 		{
-			my_map[linearizeCoordinate(i, j)] = (line[j] != '.');
+			// my_map[linearizeCoordinate(i, j)] = (line[j] != '.');
+			my_map[linearizeCoordinate(i, j)] = false;
 		}
 	}
 	myfile.close();
@@ -413,23 +414,40 @@ bool Instance::loadAgents()
 		num_of_agents = atoi((*beg).c_str());
 		start_locations.resize(num_of_agents);
 		goal_locations.resize(num_of_agents);
-		for (int i = 0; i < num_of_agents; i++)
+		for (int i = 0; i < 2 * num_of_agents; i++)
 		{
 			getline(myfile, line);
 			tokenizer<char_separator<char>> col_tok(line, sep);
 			tokenizer<char_separator<char>>::iterator c_beg = col_tok.begin();
 			pair<int, int> curr_pair;
-			// read start [row,col] for agent i
-			int row = atoi((*c_beg).c_str());
-			c_beg++;
-			int col = atoi((*c_beg).c_str());
-			start_locations[i] = linearizeCoordinate(row, col);
-			// read goal [row,col] for agent i
-			c_beg++;
-			row = atoi((*c_beg).c_str());
-			c_beg++;
-			col = atoi((*c_beg).c_str());
-			goal_locations[i] = linearizeCoordinate(row, col);
+			if((*c_beg)=="s"){
+				c_beg++;
+				int idx = atoi((*c_beg).c_str());
+				c_beg++;
+				int row = atoi((*c_beg).c_str());
+				c_beg++;
+				int col = atoi((*c_beg).c_str());
+				start_locations[idx] = linearizeCoordinate(row, col);
+			}else if((*c_beg)=="e"){
+				c_beg++;
+				int idx = atoi((*c_beg).c_str());
+				c_beg++;
+				int row = atoi((*c_beg).c_str());
+				c_beg++;
+				int col = atoi((*c_beg).c_str());
+				goal_locations[idx] = linearizeCoordinate(row, col);
+			}
+			// // read start [row,col] for agent idx
+			// int row = atoi((*c_beg).c_str());
+			// c_beg++;
+			// int col = atoi((*c_beg).c_str());
+			// start_locations[i] = linearizeCoordinate(row, col);
+			// // read goal [row,col] for agent i
+			// c_beg++;
+			// row = atoi((*c_beg).c_str());
+			// c_beg++;
+			// col = atoi((*c_beg).c_str());
+			// goal_locations[i] = linearizeCoordinate(row, col);
 		}
 	}
 	myfile.close();
