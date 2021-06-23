@@ -59,7 +59,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// Runs the algorithm until the problem is solved or time is exhausted 
-	bool solve(double time_limit, int cost_lowerbound = 0, int cost_upperbound = MAX_COST);
+	bool solve(double time_limit, int cost_lowerbound = 0, int cost_upperbound = MAX_COST, const string &instanceName = "");
 
 	CBS(const Instance& instance, bool sipp, int screen);
 	CBS(vector<SingleAgentSolver*>& search_engines,
@@ -146,7 +146,7 @@ private:
 
 	// print and save
 	void printPaths() const;
-	void printResults() const;
+	void printResults(const string &instanceName) const;
 	static void printConflicts(const CBSNode &curr);
 
 	bool validateSolution() const;

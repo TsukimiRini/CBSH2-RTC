@@ -82,7 +82,10 @@ public:
 	vector<int> my_heuristic;  // this is the precomputed heuristic for this agent
 	int compute_heuristic(int from, int to) const  // compute admissible heuristic between two locations
 	{
-		return max(get_DH_heuristic(from, to), instance.getManhattanDistance(from, to));
+		// cout <<from <<","<<to<<endl;
+		int a = get_DH_heuristic(from, to);
+		int b = instance.getManhattanDistance(from, to);
+		return max(a, b);
 	}
 	const Instance& instance;
 
@@ -109,6 +112,10 @@ public:
 
 protected:
 	void compute_heuristics();
-	int get_DH_heuristic(int from, int to) const { return abs(my_heuristic[from] - my_heuristic[to]); }
+	int get_DH_heuristic(int from, int to) const { 
+		// cout <<"from"<<from<<"to"<<to<<endl;
+		// cout<<"myheuristic len:"<<my_heuristic.size()<<endl;
+		return abs(my_heuristic[from] - my_heuristic[to]); 
+	}
 };
 

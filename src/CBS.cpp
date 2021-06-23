@@ -564,8 +564,9 @@ void CBS::updateFocalList()
 }
 
 
-void CBS::printResults() const
+void CBS::printResults(const string &instanceName) const
 {
+	cout << instanceName << " :";
 	if (solution_cost >= 0) // solved
 		cout << "Optimal,";
 	else if (solution_cost == -1) // time_out
@@ -669,7 +670,6 @@ void CBS::saveSteps(const string &fileName, const string& instanceName) const{
 		steps = max(steps, int((*paths[i]).size()));
 	}
 	int makespan=-1,success_a=0,sum_of_costs=0;
-	cout<<steps<<endl;
 	for(int i=0;i<steps;i++){
 		for(int j=0;j<num_of_agents;j++){
 			if((*paths[j]).size()>i && i!=0 && (*paths[j])[i].location!= (*paths[j])[i-1].location){
@@ -805,17 +805,18 @@ string CBS::getSolverName() const
 	return name;
 }
 
-bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound)
+bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound, const string &instanceName)
 {
 	this->min_f_val = _cost_lowerbound;
 	this->cost_upperbound = _cost_upperbound;
 	this->time_limit = _time_limit;
 
+
 	if (screen > 0) // 1 or 2
 	{
 		string name = getSolverName();
 		name.resize(35, ' ');
-		cout << name << ": ";
+		// cout << name << ": ";
 	}
 	// set timer
 	start = clock();
@@ -923,7 +924,6 @@ bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound)
 			}
 			continue;
 		}
-
 
 
 		//Expand the node
@@ -1120,7 +1120,7 @@ bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound)
 	if (screen == 2)
         printPaths();
 	if (screen > 0) // 1 or 2
-		printResults();
+		printResults(instanceName);
 	return solution_found;
 }
 

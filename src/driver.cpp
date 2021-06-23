@@ -155,7 +155,7 @@ int main(int argc, char** argv)
 	for (int i = 0; i < runs; i++)
 	{
 		cbs.clear();
-		cbs.solve(vm["cutoffTime"].as<double>(), min_f_val);
+		cbs.solve(vm["cutoffTime"].as<double>(), min_f_val, MAX_COST, vm["agents"].as<string>());
 		runtime += cbs.runtime;
 		if (cbs.solution_found)
 			break;

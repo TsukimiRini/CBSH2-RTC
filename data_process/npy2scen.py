@@ -36,9 +36,9 @@ while num_agents < 1024:
                     f.write(str(num_agents) + "\n")
                     for i in range(size):
                         for j in range(size):
-                            if s_arr[i][j] != 0:
+                            if s_arr[i][j] > 0:
                                 f.write("s,{},{},{}\n".format(
                                     s_arr[i][j] - 1, i, j))
-                            if e_arr[i][j] != 0:
+                            if e_arr[i][j] > 0:
                                 f.write("e,{},{},{}\n".format(
                                     e_arr[i][j] - 1, i, j))
