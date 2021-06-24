@@ -67,7 +67,7 @@ private:
 
 	double time_limit;
 	int node_limit = 10;  // terminate the sub CBS solver if the number of its expanded nodes exceeds the node limit.
-	double start_time;
+	system_clock::time_point start_time = system_clock::now();
 
 	const vector<Path*>& paths;
 	const vector<SingleAgentSolver*>& search_engines;

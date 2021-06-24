@@ -489,7 +489,7 @@ MDD* MDDTable::getMDD(CBSNode& node, int id, size_t mdd_levels)
 	}
 	releaseMDDMemory(id);
 
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	MDD* mdd = new MDD();
 	ConstraintTable ct(initial_constraints[id]);
 	ct.build(node, id);
@@ -498,7 +498,7 @@ MDD* MDDTable::getMDD(CBSNode& node, int id, size_t mdd_levels)
 	{
 		lookupTable[c.a][c] = mdd;
 	}
-	accumulated_runtime += (double) (clock() - t) / CLOCKS_PER_SEC;
+	accumulated_runtime += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return mdd;
 }
 

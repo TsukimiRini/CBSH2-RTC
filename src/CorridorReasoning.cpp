@@ -7,7 +7,7 @@
 shared_ptr<Conflict> CorridorReasoning::run(const shared_ptr<Conflict>& conflict,
 	const vector<Path*>& paths, const CBSNode& node)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
     shared_ptr<Conflict> corridor = nullptr;
     switch(strategy)
     {
@@ -31,7 +31,7 @@ shared_ptr<Conflict> CorridorReasoning::run(const shared_ptr<Conflict>& conflict
                 corridor = findPseudoCorridorConflict(conflict, paths, node);
             break;
     }
-	accumulated_runtime += (double)(clock() - t) / CLOCKS_PER_SEC;
+	accumulated_runtime += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return corridor;
 }
 

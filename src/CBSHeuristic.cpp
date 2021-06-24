@@ -26,7 +26,7 @@ bool CBSHeuristic::computeInformedHeuristics(CBSNode& curr, double _time_limit)
 {
 	curr.h_computed = true;
 	// create conflict graph
-	start_time = clock();
+	system_clock::time_point start_time = system_clock::now();
 	this->time_limit = _time_limit;
 	int num_of_CGedges;
 	vector<int> HG(num_of_agents * num_of_agents, 0); // heuristic graph
@@ -93,7 +93,7 @@ void CBSHeuristic::buildCardinalConflictGraph(CBSNode& curr, vector<int>& CG, in
 			}
 		}
 	}
-	runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	runtime_build_dependency_graph += std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 }
 
 
@@ -122,9 +122,9 @@ bool CBSHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num
 				lookupTable[a1][a2][DoubleConstraintsHasher(a1, a2, &node)] = node.conflictGraph[idx];
 			}
 		}
-		if ((clock() - start_time) / CLOCKS_PER_SEC > time_limit) // run out of time
+		if (std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count() > time_limit) // run out of time
 		{
-			runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
+			runtime_build_dependency_graph += std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 			return false;
 		}
 	}
@@ -143,7 +143,7 @@ bool CBSHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num
 			}
 		}
 	}
-	runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	runtime_build_dependency_graph += std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 	return true;
 }
 
@@ -195,9 +195,9 @@ bool CBSHeuristic::buildWeightedDependencyGraph(CBSNode& node, vector<int>& CG)
 		{
 			return false;
 		}
-		if ((clock() - start_time) / CLOCKS_PER_SEC > time_limit) // run out of time
+		if (std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count() > time_limit) // run out of time
 		{
-			runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
+			runtime_build_dependency_graph += std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 			return false;
 		}
 	}
@@ -214,7 +214,7 @@ bool CBSHeuristic::buildWeightedDependencyGraph(CBSNode& node, vector<int>& CG)
 			}
 		}
 	}
-	runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	runtime_build_dependency_graph += std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 	return true;
 }
 
@@ -243,7 +243,7 @@ int CBSHeuristic::solve2Agents(int a1, int a2, const CBSNode& node, bool cardina
 	cbs.setMutexReasoning(mutex_reasoning);
 	cbs.setNodeLimit(node_limit);
 
-	double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	double runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 	int root_g = (int)initial_paths[0].size() - 1 + (int)initial_paths[1].size() - 1;
 	int lowerbound = root_g;
 	int upperbound = MAX_COST;
@@ -302,7 +302,7 @@ vector<int> CBSHeuristic::buildConflictGraph(const CBSNode& curr) const
 
 int CBSHeuristic::minimumVertexCover(const vector<int>& CG)
 {
-    clock_t t = clock();
+    system_clock::time_point t = system_clock::now();
 	int rst = 0;
 	std::vector<bool> done(num_of_agents, false);
 	for (int i = 0; i < num_of_agents; i++)
@@ -361,10 +361,10 @@ int CBSHeuristic::minimumVertexCover(const vector<int>& CG)
         if ((int)indices.size() > DP_node_threshold)
         {
             rst += greedyMatching(subgraph, (int)indices.size());
-            double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+            double runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
             if (runtime > time_limit)
             {
-                runtime_solve_MVC += (double)(clock() - t) / CLOCKS_PER_SEC;
+                runtime_solve_MVC += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
                 return -1; // run out of time
             }
         }
@@ -374,13 +374,13 @@ int CBSHeuristic::minimumVertexCover(const vector<int>& CG)
                     rst += i;
                     break;
                 }
-                double runtime = (double) (clock() - start_time) / CLOCKS_PER_SEC;
+                double runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
                 if (runtime > time_limit)
                     return -1; // run out of time
             }
         }
 	}
-    runtime_solve_MVC += (double)(clock() - t) / CLOCKS_PER_SEC;
+    runtime_solve_MVC += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return rst;
 }
 
@@ -388,7 +388,7 @@ int CBSHeuristic::minimumVertexCover(const vector<int>& CG)
 int CBSHeuristic::minimumVertexCover(const std::vector<int>& CG, int old_mvc, int cols, int num_of_CGedges)
 {
     assert(old_mvc >= 0);
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	int rst = 0;
 	if (num_of_CGedges < 2)
 		return num_of_CGedges;
@@ -408,7 +408,7 @@ int CBSHeuristic::minimumVertexCover(const std::vector<int>& CG, int old_mvc, in
 
 	if (num_of_CGnodes > DP_node_threshold)
 	{
-        runtime_solve_MVC += (double)(clock() - t) / CLOCKS_PER_SEC;
+        runtime_solve_MVC += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 		return minimumVertexCover(CG);
 	}
 	else
@@ -420,14 +420,14 @@ int CBSHeuristic::minimumVertexCover(const std::vector<int>& CG, int old_mvc, in
 		else
 			rst = old_mvc + 1;
 	}
-	runtime_solve_MVC += (double)(clock() - t) / CLOCKS_PER_SEC;
+	runtime_solve_MVC += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return rst;
 }
 
 // Whether there exists a k-vertex cover solution
 bool CBSHeuristic::KVertexCover(const std::vector<int>& CG, int num_of_CGnodes, int num_of_CGedges, int k, int cols)
 {
-	double runtime = (double) (clock() - start_time) / CLOCKS_PER_SEC;
+	double runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 	if (runtime > time_limit)
 		return true; // run out of time
 	if (num_of_CGedges == 0)
@@ -503,9 +503,9 @@ int CBSHeuristic::greedyMatching(const std::vector<int>& CG,  int cols)
 
 int CBSHeuristic::minimumWeightedVertexCover(const vector<int>& HG)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	int rst = weightedVertexCover(HG);
-	runtime_solve_MVC += (double)(clock() - t) / CLOCKS_PER_SEC;
+	runtime_solve_MVC += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return rst;
 }
 
@@ -582,7 +582,7 @@ int CBSHeuristic::weightedVertexCover(const std::vector<int>& CG)
 			int best_so_far = MAX_COST;
 			rst += DPForWMVC(x, 0, 0, G, range, best_so_far);
 		}
-		double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+		double runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 		if (runtime > time_limit)
 			return -1; // run out of time
 	}
@@ -611,7 +611,7 @@ int CBSHeuristic::DPForWMVC(std::vector<int>& x, int i, int sum, const std::vect
 {
 	if (sum >= best_so_far)
 		return MAX_COST;
-	double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	double runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start_time).count();
 	if (runtime > time_limit)
 		return -1; // run out of time
 	else if (i == (int)x.size())

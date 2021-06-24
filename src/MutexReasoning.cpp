@@ -4,14 +4,14 @@
 
 shared_ptr<Conflict> MutexReasoning::run(const vector<Path*> & paths, int a1, int a2, CBSNode& node, MDD* mdd_1, MDD* mdd_2)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	if (a1 > a2)
 	{
 		std::swap(a1, a2);
 		std::swap(mdd_1, mdd_2);
 	}
 	auto conflict = findMutexConflict(paths, a1, a2, node, mdd_1, mdd_2);
-	accumulated_runtime += (double) (clock() - t) / CLOCKS_PER_SEC;
+	accumulated_runtime += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return conflict;
 }
 

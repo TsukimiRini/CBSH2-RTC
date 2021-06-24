@@ -11,6 +11,7 @@
 #include <boost/heap/pairing_heap.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#include <chrono>
 
 using boost::heap::pairing_heap;
 using boost::heap::compare;
@@ -29,7 +30,7 @@ using std::min;
 using std::max;
 using std::shared_ptr;
 using std::make_shared;
-using std::clock;
+using std::chrono::system_clock;
 using std::cout;
 using std::endl;
 using std::ofstream;

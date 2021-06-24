@@ -7,7 +7,7 @@
 shared_ptr<Conflict> RectangleReasoning::run(const vector<Path*>& paths, int timestep,
 											 int a1, int a2, const MDD* mdd1, const MDD* mdd2)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	shared_ptr<Conflict> rectangle = nullptr;
 	switch(strategy)
 	{
@@ -24,7 +24,7 @@ shared_ptr<Conflict> RectangleReasoning::run(const vector<Path*>& paths, int tim
 		rectangle = findGenerealizedRectangleConflict(paths, timestep, a1, a2, mdd1, mdd2);
 		break;
 	}
-	accumulated_runtime += (double)(clock() - t) / CLOCKS_PER_SEC;
+	accumulated_runtime += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	return rectangle;
 }
 

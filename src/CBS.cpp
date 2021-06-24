@@ -116,7 +116,7 @@ void CBS::findConflicts(CBSNode& curr, int a1, int a2)
 
 void CBS::findConflicts(CBSNode& curr)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	if (curr.parent != nullptr)
 	{
 		// Copy from parent
@@ -160,7 +160,7 @@ void CBS::findConflicts(CBSNode& curr)
 		}
 	}
 	// curr.tie_breaking = (int)(curr.unknownConf.size() + curr.conflicts.size());
-	runtime_detect_conflicts += (double) (clock() - t) / CLOCKS_PER_SEC;
+	runtime_detect_conflicts += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 }
 
 
@@ -374,7 +374,7 @@ void CBS::removeLowPriorityConflicts(list<shared_ptr<Conflict>>& conflicts) cons
 
 bool CBS::findPathForSingleAgent(CBSNode* node, int ag, int lowerbound)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	// build reservation table
 	// CAT cat(node->makespan + 1);  // initialized to false
 	// updateReservationTable(cat, ag, *node);
@@ -384,7 +384,7 @@ bool CBS::findPathForSingleAgent(CBSNode* node, int ag, int lowerbound)
 	num_LL_generated += search_engines[ag]->num_generated;
 	runtime_build_CT += search_engines[ag]->runtime_build_CT;
 	runtime_build_CAT += search_engines[ag]->runtime_build_CAT;
-	runtime_path_finding += (double) (clock() - t) / CLOCKS_PER_SEC;
+	runtime_path_finding += std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	if (!new_path.empty())
 	{
 		assert(!isSamePath(*paths[ag], new_path));
@@ -403,7 +403,7 @@ bool CBS::findPathForSingleAgent(CBSNode* node, int ag, int lowerbound)
 
 bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 {
-	clock_t t1 = clock();
+	system_clock::time_point t1 = system_clock::now();
 	node->parent = parent;
 	node->g_val = parent->g_val;
 	node->makespan = parent->makespan;
@@ -422,7 +422,7 @@ bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 			int lowerbound = (int)paths[a]->size() - 1;
 			if (!findPathForSingleAgent(node, a, lowerbound))
 			{
-				runtime_generate_child += (double)(clock() - t1) / CLOCKS_PER_SEC;
+				runtime_generate_child += std::chrono::duration<double, std::deca>(system_clock::now() - t1).count();
 				return false;
 			}
 		}
@@ -439,7 +439,7 @@ bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 					int lowerbound = (int) paths[ag]->size() - 1;
 					if (!findPathForSingleAgent(node, ag, lowerbound))
 					{
-						runtime_generate_child += (double) (clock() - t1) / CLOCKS_PER_SEC;
+						runtime_generate_child += std::chrono::duration<double, std::deca>(system_clock::now() - t1).count();
 						return false;
 					}
 					break;
@@ -463,7 +463,7 @@ bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 				{
 					if (!findPathForSingleAgent(node, ag, (int) paths[ag]->size() - 1))
 					{
-						runtime_generate_child += (double) (clock() - t1) / CLOCKS_PER_SEC;
+						runtime_generate_child += std::chrono::duration<double, std::deca>(system_clock::now() - t1).count();
 						return false;
 					}
 				}
@@ -487,7 +487,7 @@ bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 			{
 				if (!findPathForSingleAgent(node, ag, (int) paths[ag]->size() - 1))
 				{
-					runtime_generate_child += (double) (clock() - t1) / CLOCKS_PER_SEC;
+					runtime_generate_child += std::chrono::duration<double, std::deca>(system_clock::now() - t1).count();
 					return false;
 				}
 			}
@@ -499,7 +499,7 @@ bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 		int lowerbound = (int) paths[agent]->size() - 1;
 		if (!findPathForSingleAgent(node, agent, lowerbound))
 		{
-			runtime_generate_child += (double) (clock() - t1) / CLOCKS_PER_SEC;
+			runtime_generate_child += std::chrono::duration<double, std::deca>(system_clock::now() - t1).count();
 			return false;
 		}
 	}
@@ -507,7 +507,7 @@ bool CBS::generateChild(CBSNode* node, CBSNode* parent)
 	assert(!node->paths.empty());
 	findConflicts(*node);
 	heuristic_helper.computeQuickHeuristics(*node);
-	runtime_generate_child += (double) (clock() - t1) / CLOCKS_PER_SEC;
+	runtime_generate_child += std::chrono::duration<double, std::deca>(system_clock::now() - t1).count();
 	return true;
 }
 
@@ -819,7 +819,7 @@ bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound, 
 		// cout << name << ": ";
 	}
 	// set timer
-	start = clock();
+	system_clock::time_point start = system_clock::now();
 
 	generateRoot();
 
@@ -832,7 +832,7 @@ bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound, 
 			solution_found = false;
 			break;
 		}
-		runtime = (double) (clock() - start) / CLOCKS_PER_SEC;
+		runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start).count();
 		if (runtime > time_limit || num_HL_expanded > node_limit
 		    || heuristic_helper.sub_instances.size() >= MAX_NUM_STATS)
 		{  // time/node out
@@ -899,11 +899,12 @@ bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound, 
 		{
 			if (PC) // prioritize conflicts
 				classifyConflicts(*curr);
-			runtime = (double) (clock() - start) / CLOCKS_PER_SEC;
+			runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start).count();
 			bool succ = heuristic_helper.computeInformedHeuristics(*curr, time_limit - runtime);
-			runtime = (double) (clock() - start) / CLOCKS_PER_SEC;
+			runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start).count();
 			if (runtime > time_limit)
 			{  // timeout
+				cout << runtime<< endl;
 				solution_cost = -1;
 				solution_found = false;
 				break;
@@ -1110,7 +1111,7 @@ bool CBS::solve(double _time_limit, int _cost_lowerbound, int _cost_upperbound, 
 	}  // end of while loop
 
 
-	runtime = (double) (clock() - start) / CLOCKS_PER_SEC;
+	runtime = std::chrono::duration<double, std::deca>(system_clock::now() - start).count();
 	if (solution_found && !validateSolution())
 	{
 		cout << "Solution invalid!!!" << endl;
@@ -1151,7 +1152,7 @@ CBS::CBS(const Instance& instance, bool sipp, int screen) :
 		corridor_helper(search_engines, initial_constraints),
 		heuristic_helper(instance.getDefaultNumberOfAgents(), paths, search_engines, initial_constraints, mdd_helper)
 {
-	clock_t t = clock();
+	system_clock::time_point t = system_clock::now();
 	initial_constraints.resize(num_of_agents,
 							   ConstraintTable(instance.num_of_cols, instance.map_size));
 
@@ -1165,7 +1166,7 @@ CBS::CBS(const Instance& instance, bool sipp, int screen) :
 
 		initial_constraints[i].goal_location = search_engines[i]->goal_location;
 	}
-	runtime_preprocessing = (double) (clock() - t) / CLOCKS_PER_SEC;
+	runtime_preprocessing = std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 
 	mutex_helper.search_engines = search_engines;
 

@@ -4,6 +4,7 @@
 #include "RectangleReasoning.h"
 #include "CorridorReasoning.h"
 #include "MutexReasoning.h"
+#include <chrono>
 
 class CBS
 {
@@ -107,7 +108,8 @@ private:
 
 
 	vector<ConstraintTable> initial_constraints;
-	clock_t start;
+	std::chrono::system_clock::time_point start;
+	// clock_t start;
 
 	int num_of_agents;
 

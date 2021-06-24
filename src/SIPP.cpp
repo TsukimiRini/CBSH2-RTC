@@ -32,14 +32,14 @@ Path SIPP::findPath(const CBSNode& node, const ConstraintTable& initial_constrai
 					const vector<Path*>& paths, int agent, int lowerbound)
 {
 	Path path;
-	auto t = clock();
+	system_clock::time_point t = system_clock::now();
 	ReservationTable reservation_table(initial_constraints);
 	reservation_table.build(node, agent);
-	runtime_build_CT = (double) (clock() - t) / CLOCKS_PER_SEC;
+	runtime_build_CT = std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	int holding_time = reservation_table.getHoldingTime();
-	t = clock();
+	t = system_clock::now();
 	reservation_table.buildCAT(agent, paths);
-	runtime_build_CAT = (double) (clock() - t) / CLOCKS_PER_SEC;
+	runtime_build_CAT = std::chrono::duration<double, std::deca>(system_clock::now() - t).count();
 	if (reservation_table.length_min >= MAX_TIMESTEP ||
 		reservation_table.length_min > reservation_table.length_max) // the agent cannot reach its goal location
 		return path;
