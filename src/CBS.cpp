@@ -682,6 +682,13 @@ void CBS::saveSteps(const string &fileName, const string& instanceName) const{
 					if(t.location!=last){
 						len+=1;
 					}
+					if(last!=-1&&abs(search_engines[0]->instance.getRowCoordinate(t.location)-search_engines[0]->instance.getRowCoordinate(last))
+					+abs(search_engines[0]->instance.getColCoordinate(t.location)-search_engines[0]->instance.getColCoordinate(last))>1){
+						cout<<"invalid!"<<endl;
+						cout<<"("<<search_engines[0]->instance.getRowCoordinate(last)<<","<<
+						search_engines[0]->instance.getColCoordinate(last)<<")->("<<search_engines[0]->instance.getRowCoordinate(t.location)<<
+						","<<search_engines[0]->instance.getColCoordinate(t.location)<<")"<<endl;
+					}
 					last = t.location;
 				}
 				len--;

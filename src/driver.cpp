@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 	{
 		cbs.saveStats(vm["output"].as<string>(), vm["agents"].as<string>() + ":" + vm["agentIdx"].as<string>());
 	}
-    if (cbs.solution_found && vm.count("outputPaths"))
+    if (vm.count("outputPaths"))
         cbs.savePaths(vm["outputPaths"].as<string>());
 	if (vm.count("outputSteps"))
 		cbs.saveSteps(vm["outputSteps"].as<string>(),vm["agents"].as<string>()+":"+ vm["agentIdx"].as<string>());
