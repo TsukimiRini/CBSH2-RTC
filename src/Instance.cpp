@@ -3,6 +3,7 @@
 #include <random>      // std::default_random_engine
 #include <chrono>       // std::chrono::system_clock
 #include"Instance.h"
+#include <vector>
 
 int RANDOM_WALK_STEPS = 100000;
 
@@ -42,6 +43,14 @@ Instance::Instance(const string& map_fname, const string& agent_fname,
 		}
 	}
 
+}
+
+void Instance::changeAgentGoal(int idx, int location){
+	goal_locations[idx] = location;
+}
+
+void Instance::changeStartLocations(vector<int>start){
+	start_locations.assign(start.begin(), start.end());
 }
 
 

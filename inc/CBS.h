@@ -38,6 +38,9 @@ public:
 	CBSNode* dummy_start = nullptr;
 	CBSNode* goal_node = nullptr;
 
+	int num_of_agents;
+	vector<Path*> paths;
+	vector < SingleAgentSolver* > search_engines;  // used to find (single) agents' paths and mdd
 
 
 	bool solution_found = false;
@@ -61,6 +64,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// Runs the algorithm until the problem is solved or time is exhausted 
 	bool solve(double time_limit, int cost_lowerbound = 0, int cost_upperbound = MAX_COST, const string &instanceName = "");
+
+	void resetInstance(const Instance& instance, bool sipp, int screen);
 
 	CBS(const Instance& instance, bool sipp, int screen);
 	CBS(vector<SingleAgentSolver*>& search_engines,
@@ -111,13 +116,8 @@ private:
 	std::chrono::system_clock::time_point start;
 	// clock_t start;
 
-	int num_of_agents;
-
-
-	vector<Path*> paths;
 	vector<Path> paths_found_initially;  // contain initial paths found
 	// vector<MDD*> mdds_initially;  // contain initial paths found
-	vector < SingleAgentSolver* > search_engines;  // used to find (single) agents' paths and mdd
 
 
 	// high level search

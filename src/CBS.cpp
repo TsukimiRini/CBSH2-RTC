@@ -1183,6 +1183,23 @@ CBS::CBS(const Instance& instance, bool sipp, int screen) :
 	}
 }
 
+void CBS::resetInstance(const Instance& instance, bool sipp, int screen){
+	for (int i = 0; i < num_of_agents; i++)
+	{
+		if (sipp)
+			search_engines[i] = new SIPP(instance, i);
+		else
+			search_engines[i] = new SpaceTimeAStar(instance, i);
+
+		initial_constraints[i].goal_location = search_engines[i]->goal_location;
+	}
+
+	if (screen >= 2) // print start and goals
+	{
+		instance.printAgents();
+	}
+}
+
 bool CBS::generateRoot()
 {
 	dummy_start = new CBSNode();

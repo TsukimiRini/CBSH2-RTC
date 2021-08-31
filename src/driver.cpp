@@ -10,6 +10,7 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include "CBS.h"
+#include <stdlib.h>
 
 
 /* Main function */
@@ -52,6 +53,10 @@ int main(int argc, char** argv)
 		("targetReasoning", po::value<bool>()->default_value(true), "Using target reasoning")
 		("restart", po::value<int>()->default_value(1), "number of restart times (at least 1)")
 		("sipp", po::value<bool>()->default_value(false), "using sipp as the single agent solver")
+
+		// params for pick-up
+		("pickUpGenre", po::value<string>()->default_value("none"), "genre of pick up (none, OneByOne, IncrByTime, Disappear)")
+		("maxStep", po::value<int>(), "maximum step")
 		;
 
 	po::variables_map vm;
@@ -147,20 +152,72 @@ int main(int argc, char** argv)
 	cbs.setNodeLimit(vm["nodeLimit"].as<int>());
 
 
-	//////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////  
 	/// run
     //////////////////////////////////////////////////////////////////////
 	double runtime = 0;
 	int min_f_val = 0;
+	if (vm["pickUpGenre"].as<string>() != "none"){
+		int max_runs = vm["maxStep"].as<int>();
+		runs = max_runs;
+	}
+	
 	for (int i = 0; i < runs; i++)
 	{
 		cbs.clear();
 		cbs.solve(vm["cutoffTime"].as<double>(), min_f_val, MAX_COST, vm["agents"].as<string>());
 		runtime += cbs.runtime;
-		if (cbs.solution_found)
-			break;
-		min_f_val = (int) cbs.min_f_val;
-		cbs.randomRoot = true;
+		if(vm["pickUpGenre"].as<string>() != "none"){
+			if (!cbs.solution_found){
+				cout << "ERROR" << endl;
+				return 0;
+			}
+			vector<int> reach_goal;
+			vector<int> new_start(cbs.num_of_agents);
+			int min_path_len = cbs.paths[0]->size();
+			int reached = 0;
+			for (int i = 0; i < cbs.num_of_agents; i++)
+			{
+				int path_size = cbs.paths[i]->size();
+				if (path_size < min_path_len){
+					reached = 1;
+					min_path_len = path_size;
+				}else if(path_size == min_path_len){
+					reached++;
+				}
+			}
+			
+			reach_goal.reserve(reached);
+			vector<bool> grid_occupied(instance.num_of_cols*instance.num_of_rows);
+			for (int i = 0; i < grid_occupied.size(); i++) grid_occupied[i] = false;
+			for (int i = 0; i < cbs.num_of_agents; i++){
+				if(min_path_len==cbs.paths[i]->size()){
+					reach_goal.push_back(i);
+				}
+				new_start[i] = (*cbs.paths[i])[min_path_len-1].location;
+				grid_occupied[(*cbs.paths[i])[min_path_len-1].location] = true;
+			}
+			instance.changeStartLocations(new_start);
+
+			int residual = grid_occupied.size() - cbs.num_of_agents;
+			for (int idx : reach_goal){
+				int rand_res = rand() % residual;
+				int i = 0;
+				for(int block_i = 0; block_i < grid_occupied.size(); block_i++){
+					if(i == rand_res){
+						instance.changeAgentGoal(idx, block_i);
+						break;
+					}
+					i++;
+				}
+				residual--;
+			}
+			cbs.resetInstance(instance, vm["sipp"].as<bool>(), vm["screen"].as<int>());
+		}else{
+			if (cbs.solution_found) break;
+			min_f_val = (int) cbs.min_f_val;
+			cbs.randomRoot = true;
+		}
 	}
 	cbs.runtime = runtime;
 

@@ -18,6 +18,8 @@ public:
 
 	void printAgents() const;
 
+	void changeAgentGoal(int idx, int location);
+	void changeStartLocations(vector<int>start);
 
 	inline bool isObstacle(int loc) const { return my_map[loc]; }
 	inline bool validMove(int curr, int next) const
