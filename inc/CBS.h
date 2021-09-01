@@ -15,9 +15,9 @@ public:
 	// stats
 	double runtime = 0;
 	double runtime_generate_child = 0; // runtimr of generating child nodes
-	double runtime_build_CT = 0; // runtimr of building constraint table
-	double runtime_build_CAT = 0; // runtime of building conflict avoidance table
-	double runtime_path_finding = 0; // runtime of finding paths for single agents
+	double runtime_build_CT = 0;	   // runtimr of building constraint table
+	double runtime_build_CAT = 0;	   // runtime of building conflict avoidance table
+	double runtime_path_finding = 0;   // runtime of finding paths for single agents
 	double runtime_detect_conflicts = 0;
 	double runtime_preprocessing = 0; // runtime of building heuristic table for the low level
 
@@ -34,14 +34,12 @@ public:
 	uint64_t num_LL_expanded = 0;
 	uint64_t num_LL_generated = 0;
 
-
-	CBSNode* dummy_start = nullptr;
-	CBSNode* goal_node = nullptr;
+	CBSNode *dummy_start = nullptr;
+	CBSNode *goal_node = nullptr;
 
 	int num_of_agents;
-	vector<Path*> paths;
-	vector < SingleAgentSolver* > search_engines;  // used to find (single) agents' paths and mdd
-
+	vector<Path *> paths;
+	vector<SingleAgentSolver *> search_engines; // used to find (single) agents' paths and mdd
 
 	bool solution_found = false;
 	int solution_cost = -2;
@@ -50,97 +48,122 @@ public:
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// set params
-	void setHeuristicType(heuristics_type h) {heuristic_helper.type = h; }
-	void setPrioritizeConflicts(bool p) {PC = p;	heuristic_helper.PC = p; }
-	void setRectangleReasoning(rectangle_strategy r) {rectangle_helper.strategy = r; heuristic_helper.rectangle_reasoning = r; }
-	void setCorridorReasoning(corridor_strategy c) {corridor_helper.setStrategy(c); heuristic_helper.corridor_reasoning = c; }
-	void setTargetReasoning(bool t) {target_reasoning = t; heuristic_helper.target_reasoning = t; }
-	void setMutexReasoning(bool m) {mutex_reasoning = m; heuristic_helper.mutex_reasoning = m; }
-	void setDisjointSplitting(bool d) {disjoint_splitting = d; heuristic_helper.disjoint_splitting = d; }
+	void setHeuristicType(heuristics_type h) { heuristic_helper.type = h; }
+	void setPrioritizeConflicts(bool p)
+	{
+		PC = p;
+		heuristic_helper.PC = p;
+	}
+	void setRectangleReasoning(rectangle_strategy r)
+	{
+		rectangle_helper.strategy = r;
+		heuristic_helper.rectangle_reasoning = r;
+	}
+	void setCorridorReasoning(corridor_strategy c)
+	{
+		corridor_helper.setStrategy(c);
+		heuristic_helper.corridor_reasoning = c;
+	}
+	void setTargetReasoning(bool t)
+	{
+		target_reasoning = t;
+		heuristic_helper.target_reasoning = t;
+	}
+	void setMutexReasoning(bool m)
+	{
+		mutex_reasoning = m;
+		heuristic_helper.mutex_reasoning = m;
+	}
+	void setDisjointSplitting(bool d)
+	{
+		disjoint_splitting = d;
+		heuristic_helper.disjoint_splitting = d;
+	}
 	void setBypass(bool b) { bypass = b; } // 2-agent solver for heuristic calculation does not need bypass strategy.
 	void setNodeLimit(int n) { node_limit = n; }
-	void setSavingStats(bool s) { save_stats = s; heuristic_helper.save_stats = s; }
+	void setSavingStats(bool s)
+	{
+		save_stats = s;
+		heuristic_helper.save_stats = s;
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	// Runs the algorithm until the problem is solved or time is exhausted 
+	// Runs the algorithm until the problem is solved or time is exhausted
 	bool solve(double time_limit, int cost_lowerbound = 0, int cost_upperbound = MAX_COST, const string &instanceName = "");
 
-	void resetInstance(const Instance& instance, bool sipp, int screen);
+	void resetInstance(const Instance &instance, bool sipp, int screen);
 
-	CBS(const Instance& instance, bool sipp, int screen);
-	CBS(vector<SingleAgentSolver*>& search_engines,
-		const vector<ConstraintTable>& constraints,
-		vector<Path>& paths_found_initially, int screen);
+	CBS(const Instance &instance, bool sipp, int screen);
+	CBS(vector<SingleAgentSolver *> &search_engines,
+		const vector<ConstraintTable> &constraints,
+		vector<Path> &paths_found_initially, int screen);
 	void clearSearchEngines();
 	~CBS();
 
 	// Save results
 	void saveResults(const string &fileName, const string &instanceName) const;
 	void saveStats(const string &fileName, const string &instanceName) const;
-	void saveCT(const string &fileName) const; // write the CT to a file
-    void savePaths(const string &fileName) const; // write the paths to a file
-	void saveSteps(const string &fileName, const string& instanceName) const;
+	void saveCT(const string &fileName) const;	  // write the CT to a file
+	void savePaths(const string &fileName) const; // write the paths to a file
+	void saveSteps(const string &fileName, const string &instanceName) const;
 
 	void clear(); // used for rapid random  restart
 
 private:
-	bool target_reasoning; // using target reasoning
+	bool target_reasoning;	 // using target reasoning
 	bool disjoint_splitting; // disjoint splitting
-	bool mutex_reasoning; // using mutex reasoning
-	bool bypass; // using Bypass1
-	bool PC; // prioritize conflicts
+	bool mutex_reasoning;	 // using mutex reasoning
+	bool bypass;			 // using Bypass1
+	bool PC;				 // prioritize conflicts
 	bool save_stats;
 
-	MDDTable mdd_helper;	
+	MDDTable mdd_helper;
 	RectangleReasoning rectangle_helper;
 	CorridorReasoning corridor_helper;
 	MutexReasoning mutex_helper;
 	CBSHeuristic heuristic_helper;
 
-	pairing_heap< CBSNode*, compare<CBSNode::compare_node> > open_list;
-	pairing_heap< CBSNode*, compare<CBSNode::secondary_compare_node> > focal_list;
-	list<CBSNode*> allNodes_table;
-
+	pairing_heap<CBSNode *, compare<CBSNode::compare_node>> open_list;
+	pairing_heap<CBSNode *, compare<CBSNode::secondary_compare_node>> focal_list;
+	list<CBSNode *> allNodes_table;
 
 	string getSolverName() const;
 
 	int screen;
-	
+
 	double time_limit;
 	int node_limit = MAX_NODES;
 	double focal_w = 1.0;
 	int cost_upperbound = MAX_COST;
 
-
 	vector<ConstraintTable> initial_constraints;
 	std::chrono::system_clock::time_point start;
 	// clock_t start;
 
-	vector<Path> paths_found_initially;  // contain initial paths found
+	vector<Path> paths_found_initially; // contain initial paths found
 	// vector<MDD*> mdds_initially;  // contain initial paths found
 
-
 	// high level search
-	bool findPathForSingleAgent(CBSNode*  node, int ag, int lower_bound = 0);
-	bool generateChild(CBSNode* child, CBSNode* curr);
+	bool findPathForSingleAgent(CBSNode *node, int ag, int lower_bound = 0);
+	bool generateChild(CBSNode *child, CBSNode *curr);
 	bool generateRoot();
 
 	//conflicts
-	void findConflicts(CBSNode& curr);
-	void findConflicts(CBSNode& curr, int a1, int a2);
+	void findConflicts(CBSNode &curr);
+	void findConflicts(CBSNode &curr, int a1, int a2);
 	shared_ptr<Conflict> chooseConflict(const CBSNode &node) const;
 	void classifyConflicts(CBSNode &parent);
 	// void copyConflicts(const list<shared_ptr<Conflict>>& conflicts,
 	// 	list<shared_ptr<Conflict>>& copy, int excluded_agent) const;
-	static void copyConflicts(const list<shared_ptr<Conflict>>& conflicts,
-		list<shared_ptr<Conflict>>& copy, const list<int>& excluded_agent);
-	void removeLowPriorityConflicts(list<shared_ptr<Conflict>>& conflicts) const;
+	static void copyConflicts(const list<shared_ptr<Conflict>> &conflicts,
+							  list<shared_ptr<Conflict>> &copy, const list<int> &excluded_agent);
+	void removeLowPriorityConflicts(list<shared_ptr<Conflict>> &conflicts) const;
 	//bool isCorridorConflict(std::shared_ptr<Conflict>& corridor, const std::shared_ptr<Conflict>& con, bool cardinal, ICBSNode* node);
 
-	void computePriorityForConflict(Conflict& conflict, const CBSNode& node);
+	void computePriorityForConflict(Conflict &conflict, const CBSNode &node);
 
 	//update information
-	inline void updatePaths(CBSNode* curr);
+	inline void updatePaths(CBSNode *curr);
 	void updateFocalList();
 	inline void releaseNodes();
 	//inline void releaseMDDTable();
@@ -153,5 +176,5 @@ private:
 
 	bool validateSolution() const;
 	inline int getAgentLocation(int agent_id, size_t timestep) const;
-	inline void pushNode(CBSNode* node);
+	inline void pushNode(CBSNode *node);
 };

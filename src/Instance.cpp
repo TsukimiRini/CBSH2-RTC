@@ -1,21 +1,20 @@
-#include<boost/tokenizer.hpp>
-#include <algorithm>    // std::shuffle
-#include <random>      // std::default_random_engine
-#include <chrono>       // std::chrono::system_clock
-#include"Instance.h"
+#include <boost/tokenizer.hpp>
+#include <algorithm> // std::shuffle
+#include <random>	 // std::default_random_engine
+#include <chrono>	 // std::chrono::system_clock
+#include "Instance.h"
 #include <vector>
 
 int RANDOM_WALK_STEPS = 100000;
 
-Instance::Instance(const string& map_fname, const string& agent_fname, 
-	int num_of_agents, const string& agent_indices, 
-	int num_of_rows, int num_of_cols, int num_of_obstacles, int warehouse_width):
-	map_fname(map_fname), agent_fname(agent_fname), num_of_agents(num_of_agents),  agent_indices(agent_indices)
+Instance::Instance(const string &map_fname, const string &agent_fname,
+				   int num_of_agents, const string &agent_indices,
+				   int num_of_rows, int num_of_cols, int num_of_obstacles, int warehouse_width) : map_fname(map_fname), agent_fname(agent_fname), num_of_agents(num_of_agents), agent_indices(agent_indices)
 {
 	bool succ = loadMap();
 	if (!succ)
 	{
-		if (num_of_rows > 0 && num_of_cols > 0 && num_of_obstacles >= 0 && 
+		if (num_of_rows > 0 && num_of_cols > 0 && num_of_obstacles >= 0 &&
 			num_of_obstacles < num_of_rows * num_of_cols) // generate random grid
 		{
 			generateConnectedRandomGrid(num_of_rows, num_of_cols, num_of_obstacles);
@@ -42,21 +41,22 @@ Instance::Instance(const string& map_fname, const string& agent_fname,
 			exit(-1);
 		}
 	}
-
 }
 
-void Instance::changeAgentGoal(int idx, int location){
+void Instance::changeAgentGoal(int idx, int location)
+{
 	goal_locations[idx] = location;
 }
 
-void Instance::changeStartLocations(vector<int>start){
+void Instance::changeStartLocations(vector<int> start)
+{
 	start_locations.assign(start.begin(), start.end());
 }
 
-void Instance::changeGoalLocations(vector<int>goal){
+void Instance::changeGoalLocations(vector<int> goal)
+{
 	goal_locations.assign(goal.begin(), goal.end());
 }
-
 
 int Instance::randomWalk(int curr, int steps) const
 {
@@ -86,7 +86,7 @@ void Instance::generateRandomAgents(int warehouse_width)
 	start_locations.resize(num_of_agents);
 	goal_locations.resize(num_of_agents);
 
-	if (warehouse_width == 0)//Generate agents randomly
+	if (warehouse_width == 0) //Generate agents randomly
 	{
 		// Choose random start locations
 		int k = 0;
@@ -96,7 +96,7 @@ void Instance::generateRandomAgents(int warehouse_width)
 			int start = linearizeCoordinate(x, y);
 			if (my_map[start] || starts[start])
 				continue;
-				
+
 			// update start
 			start_locations[k] = start;
 			starts[start] = true;
@@ -157,19 +157,17 @@ bool Instance::addObstacle(int obstacle)
 	my_map[obstacle] = true;
 	int obstacle_x = getRowCoordinate(obstacle);
 	int obstacle_y = getColCoordinate(obstacle);
-	int x[4] = { obstacle_x, obstacle_x + 1, obstacle_x, obstacle_x - 1 };
-	int y[4] = { obstacle_y - 1, obstacle_y, obstacle_y + 1, obstacle_y };
+	int x[4] = {obstacle_x, obstacle_x + 1, obstacle_x, obstacle_x - 1};
+	int y[4] = {obstacle_y - 1, obstacle_y, obstacle_y + 1, obstacle_y};
 	int start = 0;
 	int goal = 1;
 	while (start < 3 && goal < 4)
 	{
-		if (x[start] < 0 || x[start] >= num_of_rows || y[start] < 0 || y[start] >= num_of_cols 
-			|| my_map[linearizeCoordinate(x[start], y[start])])
+		if (x[start] < 0 || x[start] >= num_of_rows || y[start] < 0 || y[start] >= num_of_cols || my_map[linearizeCoordinate(x[start], y[start])])
 			start++;
 		else if (goal <= start)
 			goal = start + 1;
-		else if (x[goal] < 0 || x[goal] >= num_of_rows || y[goal] < 0 || y[goal] >= num_of_cols
-				 || my_map[linearizeCoordinate(x[goal], y[goal])])
+		else if (x[goal] < 0 || x[goal] >= num_of_rows || y[goal] < 0 || y[goal] >= num_of_cols || my_map[linearizeCoordinate(x[goal], y[goal])])
 			goal++;
 		else if (isConnected(linearizeCoordinate(x[start], y[start]),
 							 linearizeCoordinate(x[goal], y[goal]))) // cannot find a path from start to goal
@@ -194,7 +192,8 @@ bool Instance::isConnected(int start, int goal) const
 	closed[start] = true;
 	while (!open.empty())
 	{
-		int curr = open.front(); open.pop();
+		int curr = open.front();
+		open.pop();
 		if (curr == goal)
 			return true;
 		for (int next : getNeighbors(curr))
@@ -273,7 +272,7 @@ bool Instance::loadMap()
 		beg = tok2.begin();
 		beg++;
 		num_of_cols = atoi((*beg).c_str()); // read number of cols
-		getline(myfile, line); // skip "map"
+		getline(myfile, line);				// skip "map"
 	}
 	else // my benchmark
 	{
@@ -307,7 +306,6 @@ bool Instance::loadMap()
 	return true;
 }
 
-
 void Instance::printMap() const
 {
 	for (int i = 0; i < num_of_rows; i++)
@@ -322,7 +320,6 @@ void Instance::printMap() const
 		cout << endl;
 	}
 }
-
 
 void Instance::saveMap() const
 {
@@ -347,7 +344,6 @@ void Instance::saveMap() const
 	}
 	myfile.close();
 }
-
 
 bool Instance::loadAgents()
 {
@@ -374,7 +370,7 @@ bool Instance::loadAgents()
 		if (agent_indices != "")
 		{
 			char_separator<char> sep(",");
-			tokenizer< char_separator<char> > chars(agent_indices, sep);
+			tokenizer<char_separator<char>> chars(agent_indices, sep);
 			int i = 0;
 			for (auto c : chars)
 			{
@@ -389,21 +385,21 @@ bool Instance::loadAgents()
 			for (int i = 0; i < num_of_agents; i++)
 				ids[i] = i;
 		}
-		char_separator<char> sep("\t");	
+		char_separator<char> sep("\t");
 		int count = 0;
 		int i = 0;
-		while(i < num_of_agents)
+		while (i < num_of_agents)
 		{
 			getline(myfile, line);
 			if (count == ids[i])
 			{
-				tokenizer< char_separator<char> > tok(line, sep);
-				tokenizer< char_separator<char> >::iterator beg = tok.begin();
+				tokenizer<char_separator<char>> tok(line, sep);
+				tokenizer<char_separator<char>>::iterator beg = tok.begin();
 				beg++; // skip the first number
 				beg++; // skip the map name
 				beg++; // skip the columns
 				beg++; // skip the rows
-					   // read start [row,col] for agent i
+					// read start [row,col] for agent i
 				int col = atoi((*beg).c_str());
 				beg++;
 				int row = atoi((*beg).c_str());
@@ -433,7 +429,8 @@ bool Instance::loadAgents()
 			tokenizer<char_separator<char>> col_tok(line, sep);
 			tokenizer<char_separator<char>>::iterator c_beg = col_tok.begin();
 			pair<int, int> curr_pair;
-			if((*c_beg)=="s"){
+			if ((*c_beg) == "s")
+			{
 				c_beg++;
 				int idx = atoi((*c_beg).c_str());
 				c_beg++;
@@ -441,7 +438,9 @@ bool Instance::loadAgents()
 				c_beg++;
 				int col = atoi((*c_beg).c_str());
 				start_locations[idx] = linearizeCoordinate(row, col);
-			}else if((*c_beg)=="e"){
+			}
+			else if ((*c_beg) == "e")
+			{
 				c_beg++;
 				int idx = atoi((*c_beg).c_str());
 				c_beg++;
@@ -465,9 +464,7 @@ bool Instance::loadAgents()
 	}
 	myfile.close();
 	return true;
-
 }
-
 
 void Instance::printAgents() const
 {
@@ -477,7 +474,6 @@ void Instance::printAgents() const
 			 << ") ; G=(" << getRowCoordinate(goal_locations[i]) << "," << getColCoordinate(goal_locations[i]) << ")" << endl;
 	}
 }
-
 
 void Instance::saveAgents() const
 {
@@ -495,11 +491,10 @@ void Instance::saveAgents() const
 	myfile.close();
 }
 
-
 list<int> Instance::getNeighbors(int curr) const
 {
 	list<int> neighbors;
-	int candidates[4] = { curr + 1, curr - 1, curr + num_of_cols, curr - num_of_cols };
+	int candidates[4] = {curr + 1, curr - 1, curr + num_of_cols, curr - num_of_cols};
 	for (int next : candidates)
 	{
 		if (validMove(curr, next))

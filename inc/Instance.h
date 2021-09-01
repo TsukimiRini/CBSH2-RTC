@@ -1,10 +1,9 @@
 #pragma once
 
-#include"common.h"
-
+#include "common.h"
 
 // Currently only works for undirected unweighted 4-neighbor grids
-class Instance 
+class Instance
 {
 public:
 	int num_of_cols = 0;
@@ -12,15 +11,15 @@ public:
 	int map_size = 0;
 
 	Instance() = default;
-	Instance(const string& map_fname, const string& agent_fname, 
-		int num_of_agents = 0, const string& agent_indices = "",
-		int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
+	Instance(const string &map_fname, const string &agent_fname,
+			 int num_of_agents = 0, const string &agent_indices = "",
+			 int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
 
 	void printAgents() const;
 
 	void changeAgentGoal(int idx, int location);
-	void changeStartLocations(vector<int>start);
-	void changeGoalLocations(vector<int>goal);
+	void changeStartLocations(vector<int> start);
+	void changeGoalLocations(vector<int> goal);
 
 	inline bool isObstacle(int loc) const { return my_map[loc]; }
 	inline bool validMove(int curr, int next) const
@@ -33,8 +32,8 @@ public:
 	}
 
 	list<int> getNeighbors(int curr) const;
-    inline int linearizeCoordinate(int row, int col) const { return ( this->num_of_cols * row + col); }
-	inline int linearizeCoordinate(const pair<int, int>& cell) const { return linearizeCoordinate(cell.first, cell.second); }
+	inline int linearizeCoordinate(int row, int col) const { return (this->num_of_cols * row + col); }
+	inline int linearizeCoordinate(const pair<int, int> &cell) const { return linearizeCoordinate(cell.first, cell.second); }
 	inline int getRowCoordinate(int id) const { return id / this->num_of_cols; }
 	inline int getColCoordinate(int id) const { return id % this->num_of_cols; }
 	inline pair<int, int> getCoordinate(int id) const { return make_pair(id / this->num_of_cols, id % this->num_of_cols); }
@@ -49,7 +48,7 @@ public:
 		return abs(loc1_x - loc2_x) + abs(loc1_y - loc2_y);
 	}
 
-	static inline int getManhattanDistance(const pair<int, int>& loc1, const pair<int, int>& loc2)
+	static inline int getManhattanDistance(const pair<int, int> &loc1, const pair<int, int> &loc2)
 	{
 		return abs(loc1.first - loc2.first) + abs(loc1.second - loc2.second);
 	}
@@ -63,17 +62,17 @@ public:
 	}
 	inline int turnLeft(int dir) const
 	{
-		if (dir ==  1) 
+		if (dir == 1)
 			return -num_of_cols;
 		else if (dir == -num_of_cols)
-			return - 1;
+			return -1;
 		else if (dir == -1)
 			return num_of_cols;
 		else if (dir == num_of_cols)
 			return 1;
 		else
 			return 0;
-	 }
+	}
 	inline int turnRight(int dir) const
 	{
 		if (dir == 1)
@@ -104,17 +103,17 @@ public:
 
 	int getDefaultNumberOfAgents() const { return num_of_agents; }
 
-	vector<int> getGoals()const { return goal_locations; }
+	vector<int> getGoals() const { return goal_locations; }
 
 private:
-	  // int moves_offset[MOVE_COUNT];
-	  vector<bool> my_map;
-	  string map_fname;
-	  string agent_fname;
-	  string agent_indices;
-	  int num_of_agents = 0;
-	  vector<int> start_locations;
-	  vector<int> goal_locations;
+	// int moves_offset[MOVE_COUNT];
+	vector<bool> my_map;
+	string map_fname;
+	string agent_fname;
+	string agent_indices;
+	int num_of_agents = 0;
+	vector<int> start_locations;
+	vector<int> goal_locations;
 
 	bool loadMap();
 	void printMap() const;
@@ -123,14 +122,13 @@ private:
 	bool loadAgents();
 	void saveAgents() const;
 
-	  void generateConnectedRandomGrid(int rows, int cols, int obstacles); // initialize new [rows x cols] map with random obstacles
-	  void generateRandomAgents(int warehouse_width);
-	  bool addObstacle(int obstacle); // add this obsatcle only if the map is still connected
-	  bool isConnected(int start, int goal) const; // run BFS to find a path between start and goal, return true if a path exists.
+	void generateConnectedRandomGrid(int rows, int cols, int obstacles); // initialize new [rows x cols] map with random obstacles
+	void generateRandomAgents(int warehouse_width);
+	bool addObstacle(int obstacle);				 // add this obsatcle only if the map is still connected
+	bool isConnected(int start, int goal) const; // run BFS to find a path between start and goal, return true if a path exists.
 
 	int randomWalk(int loc, int steps) const;
 
 	// Class  SingleAgentSolver can access private members of Node
 	friend class SingleAgentSolver;
 };
-
