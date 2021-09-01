@@ -217,16 +217,47 @@ int main(int argc, char **argv)
 				residual--;
 			}
 
+			system_clock::time_point start = system_clock::now();
+
+			vector<int> new_goals(cbs.num_of_agents);
 			if (vm["goalDistri"].as<string>() == "random")
 			{
 				unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 				std::shuffle(goals.begin(), goals.end(), std::default_random_engine(seed));
+				new_goals.assign(goals.begin(), goals.end());
 			}
 			else if (vm["goalDistri"].as<string>() == "best")
 			{
+				munkres_cpp::Matrix<int> data(cbs.num_of_agents, goals.size());
+				for (int i = 0; i < cbs.num_of_agents; i++)
+				{
+					for (int j = 0; j < goals.size(); j++)
+					{
+						int s_row = instance.getRowCoordinate(new_start[i]), s_col = instance.getColCoordinate(new_start[i]);
+						int e_row = instance.getRowCoordinate(goals[j]), e_col = instance.getColCoordinate(goals[j]);
+						data(i, j) = abs(e_row - s_row) + abs(e_col - s_col);
+					}
+				}
+
+				munkres_cpp::Munkres<int> solver(data);
+
+				for (int i = 0; i < cbs.num_of_agents; i++)
+				{
+					for (int j = 0; j < goals.size(); j++)
+					{
+						if (data(i, j) == 0)
+						{
+							new_goals[i] = goals[j];
+							break;
+						}
+					}
+					cout << endl;
+				}
 			}
 
-			instance.changeGoalLocations(goals);
+			runtime += std::chrono::duration<double, std::deca>(system_clock::now() - start).count();
+
+			instance.changeGoalLocations(new_goals);
 
 			cbs.resetInstance(instance, vm["sipp"].as<bool>(), vm["screen"].as<int>());
 		}
