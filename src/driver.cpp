@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 		("heuristics", po::value<string>()->default_value("WDG"), "heuristics for the high-level search (Zero, CG,DG, WDG)")("prioritizingConflicts", po::value<bool>()->default_value(true), "conflict priortization. If true, conflictSelection is used as a tie-breaking rule.")("bypass", po::value<bool>()->default_value(true), "Bypass1")("disjointSplitting", po::value<bool>()->default_value(false), "disjoint splitting")("rectangleReasoning", po::value<string>()->default_value("GR"), "rectangle reasoning strategy (None, R, RM, GR, Disjoint)")("corridorReasoning", po::value<string>()->default_value("GC"), " corridor reasoning strategy (None, C, PC, STC, GC, Disjoint")("mutexReasoning", po::value<bool>()->default_value(false), "Using mutex reasoning")("targetReasoning", po::value<bool>()->default_value(true), "Using target reasoning")("restart", po::value<int>()->default_value(1), "number of restart times (at least 1)")("sipp", po::value<bool>()->default_value(false), "using sipp as the single agent solver")
 
 		// params for pick-up
-		("pickUpGenre", po::value<string>()->default_value("none"), "genre of pick up (none, OneByOne, IncrByTime, Disappear)")("maxStep", po::value<int>(), "maximum step")("goalDistri", po::value<string>(), "the way of goals distribution (random, best)");
+		("pickUpGenre", po::value<string>()->default_value("none"), "genre of pick up (none, OneByOne, IncrByTime, Disappear)")("maxStep", po::value<int>(), "maximum step")("goalDistri", po::value<string>(), "the way of goals distribution (random, best)")("outputPickUpStep", po::value<string>(), "output step file")("outputPickUpStat", po::value<string>(), "output stat file");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -137,6 +137,13 @@ int main(int argc, char **argv)
 		runs = max_runs;
 	}
 
+	vector<vector<int>> step_stat;
+	int total_step = 0;
+	int solved_target = 0;
+	int re_distribute = 0;
+
+	step_stat.push_back(vector<int>{cbs.num_of_agents, cbs.num_of_agents, 0});
+
 	for (int i = 0; i < runs; i++)
 	{
 		cbs.clear();
@@ -154,8 +161,11 @@ int main(int argc, char **argv)
 			vector<int> goals = instance.getGoals();
 			int min_path_len = 1;
 			int reached = 0;
+			// 找第一个被到达的目标
 			for (int i = 0;; i++)
 			{
+				// step
+				total_step++;
 				bool goToNext = false;
 				for (int j = 0; j < cbs.num_of_agents; j++)
 				{
@@ -164,11 +174,13 @@ int main(int argc, char **argv)
 					if (itr != goals.end())
 					{
 						goToNext = true;
+						solved_target++;
 						reached++;
 						reach_goal_agent.push_back(std::distance(goals.begin(), itr));
 						reached_goal.push_back(point);
 					}
 				}
+				step_stat.push_back(vector<int>{(int)goals.size(), cbs.num_of_agents, solved_target});
 				if (goToNext)
 				{
 					min_path_len = i + 1;
@@ -195,6 +207,8 @@ int main(int argc, char **argv)
 				int point = (*cbs.paths[i])[min_path_len - 1].location;
 				new_start[i] = point;
 				grid_occupied[point] = true;
+				int goal = goals[i];
+				grid_occupied[goal] = true;
 			}
 			instance.changeStartLocations(new_start);
 
@@ -210,6 +224,7 @@ int main(int argc, char **argv)
 					if (i == rand_res)
 					{
 						goals[idx] = block_i;
+						grid_occupied[block_i] = true;
 						break;
 					}
 					i++;
@@ -220,6 +235,7 @@ int main(int argc, char **argv)
 			system_clock::time_point start = system_clock::now();
 
 			vector<int> new_goals(cbs.num_of_agents);
+			re_distribute++;
 			if (vm["goalDistri"].as<string>() == "random")
 			{
 				unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -285,6 +301,39 @@ int main(int argc, char **argv)
 		cbs.savePaths(vm["outputPaths"].as<string>());
 	if (vm.count("outputSteps"))
 		cbs.saveSteps(vm["outputSteps"].as<string>(), vm["agents"].as<string>() + ":" + vm["agentIdx"].as<string>());
+	if (vm.count("outputPickUpStep"))
+	{
+		string fileName = vm["outputPickUpStep"].as<string>();
+		std::ifstream infile(fileName);
+		bool exist = infile.good();
+		infile.close();
+		if (!exist)
+		{
+			ofstream addHeads(fileName);
+			addHeads << "step,initial goals,num of agents,reached goals" << endl;
+			addHeads.close();
+		}
+		ofstream stats(fileName, std::ios::app);
+		for (int i = 0; i < step_stat.size(); i++)
+		{
+			stats << i << "," << step_stat[i][0] << "," << step_stat[i][1] << "," << step_stat[i][2] << endl;
+		}
+	}
+	if (vm.count("outputPickUpStat"))
+	{
+		string fileName = vm["outputPickUpStat"].as<string>();
+		std::ifstream infile(fileName);
+		bool exist = infile.good();
+		infile.close();
+		if (!exist)
+		{
+			ofstream addHeads(fileName);
+			addHeads << "instance name,throughput,replan cnt,runtime" << endl;
+			addHeads.close();
+		}
+		ofstream stats(fileName, std::ios::app);
+		stats << vm["agents"].as<string>() << "," << (double)solved_target / (double)total_step << "," << re_distribute << "," << runtime << endl;
+	}
 	cbs.clearSearchEngines();
 	return 0;
 }
