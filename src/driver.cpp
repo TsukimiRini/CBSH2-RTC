@@ -11,6 +11,10 @@
 #include <boost/tokenizer.hpp>
 #include "CBS.h"
 #include <stdlib.h>
+#include "munkres-cpp/munkres.h"
+#include <algorithm>
+#include <chrono>
+#include <random>
 
 
 /* Main function */
@@ -57,6 +61,7 @@ int main(int argc, char** argv)
 		// params for pick-up
 		("pickUpGenre", po::value<string>()->default_value("none"), "genre of pick up (none, OneByOne, IncrByTime, Disappear)")
 		("maxStep", po::value<int>(), "maximum step")
+		("goalDistri", po::value<string>(), "the way of goals distribution (random, best)")
 		;
 
 	po::variables_map vm;
@@ -172,46 +177,73 @@ int main(int argc, char** argv)
 				cout << "ERROR" << endl;
 				return 0;
 			}
-			vector<int> reach_goal;
+			vector<int> reach_goal_agent, reached_goal;
 			vector<int> new_start(cbs.num_of_agents);
-			int min_path_len = cbs.paths[0]->size();
+			vector<int> goals = instance.getGoals();
+			int min_path_len = 1;
 			int reached = 0;
-			for (int i = 0; i < cbs.num_of_agents; i++)
-			{
-				int path_size = cbs.paths[i]->size();
-				if (path_size < min_path_len){
-					reached = 1;
-					min_path_len = path_size;
-				}else if(path_size == min_path_len){
-					reached++;
+			for (int i = 0; ; i++){
+				bool goToNext = false;
+				for (int j = 0; j < cbs.num_of_agents; j++){
+					int point = (*cbs.paths[j])[i].location;
+					vector<int>::iterator itr = std::find(goals.begin(), goals.end(), point);
+					if(itr!=goals.end()){
+						goToNext = true;
+						reached++;
+						reach_goal_agent.push_back(std::distance(goals.begin(), itr));
+						reached_goal.push_back(point);
+					}
+				}
+				if(goToNext){
+					min_path_len = i + 1;
+					break;
 				}
 			}
+
+			// for (int i = 0; i < cbs.num_of_agents; i++)
+			// {
+			// 	int path_size = cbs.paths[i]->size();
+			// 	if (path_size < min_path_len){
+			// 		reached = 1;
+			// 		min_path_len = path_size;
+			// 	}else if(path_size == min_path_len){
+			// 		reached++;
+			// 	}
+			// }
 			
-			reach_goal.reserve(reached);
 			vector<bool> grid_occupied(instance.num_of_cols*instance.num_of_rows);
 			for (int i = 0; i < grid_occupied.size(); i++) grid_occupied[i] = false;
 			for (int i = 0; i < cbs.num_of_agents; i++){
-				if(min_path_len==cbs.paths[i]->size()){
-					reach_goal.push_back(i);
-				}
-				new_start[i] = (*cbs.paths[i])[min_path_len-1].location;
-				grid_occupied[(*cbs.paths[i])[min_path_len-1].location] = true;
+				int point = (*cbs.paths[i])[min_path_len-1].location;
+				new_start[i] = point;
+				grid_occupied[point] = true;
 			}
 			instance.changeStartLocations(new_start);
 
 			int residual = grid_occupied.size() - cbs.num_of_agents;
-			for (int idx : reach_goal){
+			for (int idx : reach_goal_agent){
 				int rand_res = rand() % residual;
 				int i = 0;
 				for(int block_i = 0; block_i < grid_occupied.size(); block_i++){
+					if (grid_occupied[block_i]) continue;
 					if(i == rand_res){
-						instance.changeAgentGoal(idx, block_i);
+						goals[idx] = block_i;
 						break;
 					}
 					i++;
 				}
 				residual--;
 			}
+
+			if(vm["goalDistri"].as<string>()=="random"){
+				unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+				std::shuffle(goals.begin(), goals.end(), std::default_random_engine(seed));
+			}else if(vm["goalDistri"].as<string>()=="best"){
+
+			}
+
+			instance.changeGoalLocations(goals);
+
 			cbs.resetInstance(instance, vm["sipp"].as<bool>(), vm["screen"].as<int>());
 		}else{
 			if (cbs.solution_found) break;

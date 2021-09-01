@@ -53,6 +53,10 @@ void Instance::changeStartLocations(vector<int>start){
 	start_locations.assign(start.begin(), start.end());
 }
 
+void Instance::changeGoalLocations(vector<int>goal){
+	goal_locations.assign(goal.begin(), goal.end());
+}
+
 
 int Instance::randomWalk(int curr, int steps) const
 {
