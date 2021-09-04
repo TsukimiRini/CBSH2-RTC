@@ -144,17 +144,33 @@ int main(int argc, char **argv)
 
 	step_stat.push_back(vector<int>{cbs.num_of_agents, cbs.num_of_agents, 0});
 
-	for (int i = 0; i < runs; i++)
+	int last_idx = 0;
+	vector<Path> paths;
+	for (int run = 0; run < runs; run++)
 	{
 		cbs.clear();
-		cbs.solve(vm["cutoffTime"].as<double>(), min_f_val, MAX_COST, vm["agents"].as<string>());
+		cbs.solve(200, min_f_val, MAX_COST, vm["agents"].as<string>());
 		runtime += cbs.runtime;
 		if (vm["pickUpGenre"].as<string>() != "none")
 		{
+			if (!cbs.solution_found && run == 0)
+			{
+				cout << "Abandoned for " << vm["agents"].as<string>() << endl;
+				return 0;
+			}
 			if (!cbs.solution_found)
 			{
-				cout << "ERROR" << endl;
-				return 0;
+				cout << "solution not found!" << endl;
+			}
+			else
+			{
+				paths.clear();
+				paths.reserve(cbs.paths.size());
+				for (int i = 0; i < cbs.paths.size(); i++)
+				{
+					paths.push_back(*cbs.paths[i]);
+				}
+				last_idx = 0;
 			}
 			vector<int> reach_goal_agent, reached_goal;
 			vector<int> new_start(cbs.num_of_agents);
@@ -169,7 +185,12 @@ int main(int argc, char **argv)
 				bool goToNext = false;
 				for (int j = 0; j < cbs.num_of_agents; j++)
 				{
-					int point = (*cbs.paths[j])[i].location;
+					if (i + last_idx >= paths[j].size())
+					{
+						cout << "Time limit:" << vm["agents"].as<string>() << endl;
+						return 0;
+					}
+					int point = paths[j][i + last_idx].location;
 					vector<int>::iterator itr = std::find(goals.begin(), goals.end(), point);
 					if (itr != goals.end())
 					{
@@ -183,7 +204,8 @@ int main(int argc, char **argv)
 				step_stat.push_back(vector<int>{(int)goals.size(), cbs.num_of_agents, solved_target});
 				if (goToNext)
 				{
-					min_path_len = i + 1;
+					min_path_len = i + last_idx + 1;
+					last_idx = i + last_idx + 1;
 					break;
 				}
 			}
@@ -204,7 +226,7 @@ int main(int argc, char **argv)
 				grid_occupied[i] = false;
 			for (int i = 0; i < cbs.num_of_agents; i++)
 			{
-				int point = (*cbs.paths[i])[min_path_len - 1].location;
+				int point = paths[i][min_path_len - 1].location;
 				new_start[i] = point;
 				grid_occupied[point] = true;
 				int goal = goals[i];
@@ -212,7 +234,7 @@ int main(int argc, char **argv)
 			}
 			instance.changeStartLocations(new_start);
 
-			int residual = grid_occupied.size() - cbs.num_of_agents;
+			int residual = grid_occupied.size() - 2 * cbs.num_of_agents + reached;
 			for (int idx : reach_goal_agent)
 			{
 				int rand_res = rand() % residual;
